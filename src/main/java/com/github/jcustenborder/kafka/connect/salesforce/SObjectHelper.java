@@ -207,7 +207,7 @@ class SObjectHelper {
       JsonNode valueNode = sObjectNode.findValue(fieldName);
 
       final Object value;
-      if (ADDRESS_SCHEMA_NAME.equals(field.schema().name())) {
+      if (ADDRESS_SCHEMA_NAME.equals(field.schema().name()) && valueNode != null) {
         Struct address = new Struct(field.schema());
         for (Field addressField : field.schema().fields()) {
           JsonNode fieldValueNode = valueNode.findValue(addressField.name());
