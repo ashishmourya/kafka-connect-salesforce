@@ -162,6 +162,19 @@ public class SalesforceSourceTask extends SourceTask {
           } else {
             log.warn("onMessage(META_HANDSHAKE) - Already subscribed.");
           }
+        } else if (message.get("error") != null && "401::Authentication invalid".equalsIgnoreCase(message.get("error").toString())) {
+          log.error("Authentication Error - Initiating authentication again...");
+          salesforceRestClient = SalesforceRestClientFactory.create(config);
+          authenticationResponse = salesforceRestClient.authenticate();
+          streamingUrl = new GenericUrl(authenticationResponse.instance_url());
+            
+          streamingClient = createClient();
+          log.info("Starting handshake...");
+          streamingClient.handshake();
+          if (!streamingClient.waitFor(30000, BayeuxClient.State.CONNECTED)) {
+            throw new ConnectException("Not connected after 30,000 ms.");
+          }
+          log.info("Handshaking Done...");
         } else {
           log.error("Error during handshake: {} {}", message.get("error"), message.get("exception"));
         }
